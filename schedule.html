@@ -699,9 +699,6 @@
       <span class="line"></span><span class="diamond"></span><span class="line"></span>
     </div>
 
-    <div class="qrcode-placeholder" id="qrcode-container">
-      <span id="qrcode-status">加载二维码...</span>
-    </div>
     <div class="copyright">课程如有调整，以教练通知为准</div>
   </div>
 </div>
@@ -743,27 +740,6 @@
   });
 </script>
 
-<!-- QR Code Library -->
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-<script>
-  // 生成当前页面 URL 的二维码
-  document.addEventListener('DOMContentLoaded', () => {
-    const url = window.location.href;
-    const container = document.getElementById('qrcode-container');
-    container.innerHTML = '';
-    try {
-      new QRCode(container, {
-        text: url,
-        width: 80,
-        height: 80,
-        colorDark: '#1a1a1a',
-        colorLight: '#fffdf8',
-        correctLevel: QRCode.CorrectLevel.M
-      });
-    } catch(e) {
-      container.innerHTML = '<span style="font-size:0.6rem;color:#9a8c7c">扫码访问</span>';
-    }
-  });
-</script>
+
 </body>
 </html>
