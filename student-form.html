@@ -571,7 +571,51 @@
 </div>
 
 <script>
-  // ====== 数据存储 ======
+  // ====== 在线数据库配置 ======
+  // jsonblob.com - 免费在线JSON存储（无需注册），所有家长数据集中在此
+  const BLOB_ID = '019f1814-4649-70df-8a6d-b9fbb289a94e';
+  const API_BASE = 'https://jsonblob.com/api/jsonBlob';
+
+  // 在线获取所有学员
+  async function getStudentsOnline() {
+    try {
+      const res = await fetch(API_BASE + '/' + BLOB_ID, {
+        headers: { 'Accept': 'application/json' }
+      });
+      if (!res.ok) throw new Error('获取失败');
+      const json = await res.json();
+      return Array.isArray(json) ? json : [];
+    } catch(e) {
+      console.error('获取数据失败:', e);
+      return [];
+    }
+  }
+
+  // 在线保存学员（追加）
+  async function saveStudentOnline(data) {
+    try {
+      const current = await getStudentsOnline();
+      const newRecord = {
+        ...data,
+        id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        createdAt: new Date().toLocaleString('zh-CN')
+      };
+      current.push(newRecord);
+
+      const res = await fetch(API_BASE + '/' + BLOB_ID, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(current)
+      });
+      if (!res.ok) throw new Error('保存失败');
+      return current.length;
+    } catch(e) {
+      console.error('在线保存失败:', e);
+      throw e;
+    }
+  }
+
+  // 本地缓存（用于管理后台快速显示）
   const STORAGE_KEY = 'bowu_students';
 
   function getStudents() {
@@ -730,7 +774,11 @@
   }
 
   // ====== 提交 ======
-  function submitForm() {
+  async function submitForm() {
+    const submitBtn = document.querySelector('#step3 .btn-success');
+    submitBtn.disabled = true;
+    submitBtn.textContent = '提交中...';
+
     const gender = document.querySelector('input[name="gender"]:checked').value;
     const data = {
       studentName: document.getElementById('studentName').value.trim(),
@@ -742,8 +790,18 @@
       address: document.getElementById('address').value.trim()
     };
 
-    const count = saveStudent(data);
-    showToast('登记成功！当前共 ' + count + ' 名学员', 'success');
+    try {
+      // 尝试在线保存
+      const count = await saveStudentOnline(data);
+      showToast('登记成功！当前共 ' + count + ' 名学员', 'success');
+    } catch(e) {
+      // 在线保存失败时，降级为本地保存
+      const count = saveStudent(data);
+      showToast('网络不佳，已本地暂存（' + count + ' 名）', 'error');
+    }
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = '✓ 确认提交';
     showStep('Success');
   }
 

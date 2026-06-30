@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>博武武术 · 学员数据管理</title>
+<style>
+  :root {
+    --primary: #b5342e;
+    --primary-light: #fdf0ef;
+    --gold: #9a7209;
+    --jade: #266345;
+    --ink: #1a1a1a;
+    --text: #3a3028;
+    --text-muted: #9a8c7c;
+    --border: #e8e0d5;
+    --bg: #f5f0e8;
+    --card: #fffdf8;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  .header {
+    background: linear-gradient(160deg, #1c1916 0%, #2a2520 50%, #3d3025 100%);
+    padding: 28px 20px 24px;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fdfaf4;
+    letter-spacing: 0.08em;
+  }
+  .header .sub {
+    font-size: 0.7rem;
+    color: rgba(253,250,244,0.35);
+    letter-spacing: 0.15em;
+    margin-top: 4px;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px 16px 40px;
+  }
+
+  /* Login */
+  .login-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 32px 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    text-align: center;
+    max-width: 360px;
+    margin: 40px auto;
+  }
+  .login-card .icon {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+  }
+  .login-card h2 {
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    color: var(--ink);
+  }
+  .login-card input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    text-align: center;
+    margin-bottom: 12px;
+    outline: none;
+    font-family: inherit;
+  }
+  .login-card input:focus {
+    border-color: var(--primary);
+  }
+  .login-card .btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    font-family: inherit;
+  }
+  .login-card .error {
+    color: var(--primary);
+    font-size: 0.75rem;
+    margin-top: 8px;
+  }
+
+  /* Dashboard */
+  .dashboard {
+    display: none;
+  }
+  .dashboard.visible {
+    display: block;
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .stat-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 16px 12px;
+    text-align: center;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+  }
+  .stat-card .num {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--primary);
+  }
+  .stat-card .lbl {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 10px 18px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary {
+    background: var(--primary);
+    color: #fff;
+  }
+  .btn-jade {
+    background: var(--jade);
+    color: #fff;
+  }
+  .btn-outline {
+    background: #fff;
+    color: var(--text);
+    border: 1.5px solid var(--border);
+  }
+  .btn-sm {
+    padding: 6px 12px;
+    font-size: 0.7rem;
+  }
+
+  .table-wrap {
+    background: var(--card);
+    border-radius: var(--radius);
+    overflow-x: auto;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+    margin-bottom: 16px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+    min-width: 700px;
+  }
+  thead th {
+    background: #faf8f3;
+    padding: 10px 8px;
+    border-bottom: 2px solid var(--border);
+    font-weight: 700;
+    white-space: nowrap;
+    text-align: center;
+  }
+  tbody td {
+    padding: 9px 8px;
+    border-bottom: 1px solid #f5f0e8;
+    text-align: center;
+  }
+  tbody tr:hover {
+    background: #fefefc;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 0.65rem;
+    font-weight: 600;
+  }
+  .badge-cw { background: #fdf0ef; color: #b5342e; }
+  .badge-cd { background: #fdf8ed; color: #9a7209; }
+  .badge-tj { background: #edf7f1; color: #266345; }
+  .badge-jy { background: #eeeff7; color: #353869; }
+
+  .loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-muted);
+  }
+  .empty {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  .footer-info {
+    text-align: center;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    margin-top: 20px;
+    opacity: 0.6;
+  }
+
+  @media (max-width: 500px) {
+    .stats-row {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>博武武术 · 学员数据管理</h1>
+  <div class="sub">BOWU MARTIAL ARTS · DATA MANAGEMENT</div>
+</div>
+
+<div class="container">
+
+  <!-- Login -->
+  <div class="login-card" id="loginCard">
+    <div class="icon">🔐</div>
+    <h2>请输入管理密码</h2>
+    <input type="password" id="pwdInput" placeholder="管理密码" onkeydown="if(event.key==='Enter')login()">
+    <button class="btn" onclick="login()">进入管理后台</button>
+    <div class="error" id="loginError"></div>
+  </div>
+
+  <!-- Dashboard -->
+  <div class="dashboard" id="dashboard">
+    <div class="stats-row">
+      <div class="stat-card"><div class="num" id="statTotal">-</div><div class="lbl">总人数</div></div>
+      <div class="stat-card"><div class="num" id="statCW">-</div><div class="lbl">传武班</div></div>
+      <div class="stat-card"><div class="num" id="statCD">-</div><div class="lbl">传德班</div></div>
+      <div class="stat-card"><div class="num" id="statOther">-</div><div class="lbl">太极+精英</div></div>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn btn-jade" onclick="exportCSV()">📥 导出 Excel</button>
+      <button class="btn btn-primary" onclick="refreshData()">🔄 刷新数据</button>
+      <button class="btn btn-outline" onclick="showPhoneList()">📋 手机号列表</button>
+      <button class="btn btn-outline btn-sm" onclick="clearData()" style="color:#b5342e;">清空数据</button>
+    </div>
+
+    <div class="table-wrap">
+      <div class="loading" id="loading">加载中...</div>
+      <div class="empty" id="empty" style="display:none;">暂无学员数据</div>
+      <table id="dataTable" style="display:none;">
+        <thead>
+          <tr>
+            <th>序号</th>
+            <th>学生姓名</th>
+            <th>性别</th>
+            <th>年龄</th>
+            <th>班级</th>
+            <th>家长姓名</th>
+            <th>手机号</th>
+            <th>家庭住址</th>
+            <th>登记时间</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="footer-info" id="lastUpdate"></div>
+  </div>
+</div>
+
+<script>
+  // ====== 配置 ======
+  const BLOB_ID = '019f1814-4649-70df-8a6d-b9fbb289a94e';
+  const API_BASE = 'https://jsonblob.com/api/jsonBlob';
+  const ADMIN_PASSWORD = 'bowu2026';
+
+  let students = [];
+
+  // ====== 登录 ======
+  function login() {
+    const pwd = document.getElementById('pwdInput').value.trim();
+    if (pwd === ADMIN_PASSWORD) {
+      document.getElementById('loginCard').style.display = 'none';
+      document.getElementById('dashboard').classList.add('visible');
+      document.getElementById('loginError').textContent = '';
+      refreshData();
+    } else {
+      document.getElementById('loginError').textContent = '密码错误，请重试';
+    }
+  }
+
+  // ====== 数据加载 ======
+  async function refreshData() {
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('dataTable').style.display = 'none';
+    document.getElementById('empty').style.display = 'none';
+
+    try {
+      const res = await fetch(API_BASE + '/' + BLOB_ID, {
+        headers: { 'Accept': 'application/json' }
+      });
+      if (!res.ok) throw new Error('获取失败');
+      const json = await res.json();
+      students = Array.isArray(json) ? json : [];
+      renderData();
+    } catch(e) {
+      console.error('加载失败:', e);
+      document.getElementById('loading').textContent = '加载失败，请检查网络后刷新';
+      try {
+        students = JSON.parse(localStorage.getItem('bowu_students')) || [];
+        if (students.length > 0) {
+          renderData();
+          document.getElementById('loading').textContent = '（已加载本地缓存数据，非最新）';
+        }
+      } catch(e2) {}
+    }
+  }
+
+  function renderData() {
+    document.getElementById('loading').style.display = 'none';
+
+    if (students.length === 0) {
+      document.getElementById('empty').style.display = 'block';
+      document.getElementById('dataTable').style.display = 'none';
+      updateStats();
+      return;
+    }
+
+    document.getElementById('empty').style.display = 'none';
+    document.getElementById('dataTable').style.display = 'table';
+
+    // 表格
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = students.map((s, i) => {
+      let badgeClass = '';
+      if (s.className === '传武班') badgeClass = 'badge-cw';
+      else if (s.className === '传德班') badgeClass = 'badge-cd';
+      else if (s.className === '太极班') badgeClass = 'badge-tj';
+      else if (s.className === '精英班') badgeClass = 'badge-jy';
+
+      return `
+        <tr>
+          <td>${i + 1}</td>
+          <td><strong>${esc(s.studentName)}</strong></td>
+          <td>${esc(s.gender)}</td>
+          <td>${esc(s.age)}</td>
+          <td><span class="badge ${badgeClass}">${esc(s.className)}</span></td>
+          <td>${esc(s.parentName)}</td>
+          <td>${esc(s.phone)}</td>
+          <td style="text-align:left;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(s.address)}">${esc(s.address)}</td>
+          <td style="white-space:nowrap;">${esc(s.createdAt)}</td>
+          <td><button class="btn btn-outline btn-sm" onclick="deleteStudent(${i})" style="color:#b5342e;">删除</button></td>
+        </tr>`;
+    }).join('');
+
+    updateStats();
+    document.getElementById('lastUpdate').textContent = '最后更新：' + new Date().toLocaleString('zh-CN');
+  }
+
+  function esc(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function updateStats() {
+    const total = students.length;
+    const cw = students.filter(s => s.className === '传武班').length;
+    const cd = students.filter(s => s.className === '传德班').length;
+    const other = total - cw - cd;
+
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statCW').textContent = cw;
+    document.getElementById('statCD').textContent = cd;
+    document.getElementById('statOther').textContent = other;
+  }
+
+  // ====== 导出 ======
+  function exportCSV() {
+    if (students.length === 0) {
+      alert('暂无数据可导出');
+      return;
+    }
+    const BOM = '\uFEFF';
+    const headers = ['序号','学生姓名','性别','年龄','班级','家长姓名','手机号','家庭住址','登记时间'];
+    const rows = students.map((s, i) => [
+      i + 1,
+      s.studentName, s.gender, s.age, s.className,
+      s.parentName, s.phone, s.address, s.createdAt
+    ].map(v => `"${(v || '').toString().replace(/"/g, '""')}"`).join(','));
+
+    const csv = BOM + headers.join(',') + '\n' + rows.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '博武武术学员信息_' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // ====== 手机号列表 ======
+  function showPhoneList() {
+    if (students.length === 0) {
+      alert('暂无数据');
+      return;
+    }
+    const phones = students.map(s => s.phone).filter(Boolean);
+    const text = phones.join('\n');
+    const blob = new Blob(['\uFEFF' + text], { type: 'text/plain;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '博武武术学员手机号_' + new Date().toISOString().slice(0, 10) + '.txt';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // ====== 删除 ======
+  async function deleteStudent(index) {
+    if (!confirm('确定删除 ' + students[index].studentName + ' 的信息吗？')) return;
+    students.splice(index, 1);
+
+    try {
+      await fetch(API_BASE + '/' + BLOB_ID, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(students)
+      });
+      renderData();
+      alert('已删除');
+    } catch(e) {
+      alert('删除失败，请刷新后重试');
+    }
+  }
+
+  // ====== 清空 ======
+  async function clearData() {
+    if (!confirm('确定要清空所有学员数据吗？此操作不可恢复！')) return;
+    if (!confirm('再次确认：真的要删除所有数据吗？')) return;
+
+    try {
+      await fetch(API_BASE + '/' + BLOB_ID, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify([])
+      });
+      students = [];
+      renderData();
+      alert('所有数据已清空');
+    } catch(e) {
+      alert('清空失败，请重试');
+    }
+  }
+
+  // ====== 初始化 ======
+  // 检查 URL 参数自动登录
+  if (window.location.hash === '#auto') {
+    document.getElementById('pwdInput').value = ADMIN_PASSWORD;
+    setTimeout(() => login(), 100);
+  }
+</script>
+
+</body>
+</html>
